@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
+import authRoutes from "./routes/authRoutes.js";
 
 // Load environment variables
 dotenv.config();
@@ -9,6 +10,7 @@ const app = express();
 
 // Parse JSON request bodies
 app.use(express.json());
+app.use("/api/auth", authRoutes); //meaning: For every request beginning with /api/auth, let authRoutes handle the rest.
 
 // Basic test route
 app.get("/", (req, res) => {
