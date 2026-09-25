@@ -26,3 +26,17 @@ export const deleteFile = async (filePath) => {
     throw new Error(error.message);
   }
 };
+
+export const downloadFile = async (filePath) => {
+  const { data, error } = await supabase.storage
+    .from(BUCKET_NAME)
+    .download(filePath);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const arrayBuffer = await data.arrayBuffer();
+
+  return Buffer.from(arrayBuffer);
+};
