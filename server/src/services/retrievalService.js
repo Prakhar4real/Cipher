@@ -13,19 +13,26 @@ export const searchSimilarChunks = async (
     userId
   }).select("_id");
 
-  const subjectIds = subjects.map((subject) => subject._id);
+  const subjectIds = subjects.map(
+    (subject) => subject._id
+  );
 
   const documents = await Document.find({
     subjectId: { $in: subjectIds }
   }).select("_id");
 
-  const documentIds = documents.map((document) => document._id);
+  const documentIds = documents.map(
+    (document) => document._id
+  );
 
   if (documentIds.length === 0) {
     return [];
   }
 
-  const numCandidates = Math.max(limit * 10, 50);
+  const numCandidates = Math.max(
+    limit * 10,
+    50
+  );
 
   const results = await Chunk.aggregate([
     {
@@ -56,5 +63,29 @@ export const searchSimilarChunks = async (
     }
   ]);
 
-  return results;
+  const documentIdsFromResults = results.map(
+    (result) => result.documentId
+  );
+
+  const documentsById = new Map();
+
+  const retrievedDocuments = await Document.find({
+    _id: {
+      $in: documentIdsFromResults
+    }
+  }).select("_id name");
+
+  for (const document of retrievedDocuments) {
+    documentsById.set(
+      document._id.toString(),
+      document.name
+    );
+  }
+
+  return results.map((result) => ({
+    ...result,
+    documentName: documentsById.get(
+      result.documentId.toString()
+    )
+  }));
 };

@@ -7,7 +7,7 @@ export const generateAnswer = async (question, sources) => {
     .map(
       (source, index) => `
 SOURCE ${index + 1}
-Document ID: ${source.documentId}
+Document: ${source.documentName}
 Page: ${source.pageNumber}
 Chunk: ${source.chunkIndex}
 
@@ -26,7 +26,7 @@ Rules:
 2. Do not use outside knowledge.
 3. Do not invent facts.
 4. Do not invent citations or page numbers.
-5. If the provided sources do not contain enough information to answer the question, say so clearly.
+5. If the provided sources do not contain enough information to answer the question, clearly say that the provided sources do not contain enough information.
 6. Give a concise and useful answer.
 
 PROVIDED SOURCES:
@@ -41,5 +41,10 @@ ${question}
     contents: prompt
   });
 
-  return response.text;
+  return {
+    answer: response.text,
+    hasAnswer: !response.text
+      .toLowerCase()
+      .includes("do not contain enough information")
+  };
 };

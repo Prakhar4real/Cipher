@@ -4,6 +4,7 @@ import {
   uploadFile,
   deleteFile
 } from "../services/storageService.js";
+import { ingestDocument } from "../services/ingestionService.js";
 
 export const uploadDocument = async (req, res) => {
   try {
@@ -47,12 +48,21 @@ export const uploadDocument = async (req, res) => {
       status: "uploaded"
     });
 
+    await ingestDocument(document._id);
+
+    const processedDocument = await Document.findById(
+      document._id
+    );
+
     return res.status(201).json({
-      message: "Document uploaded successfully",
-      document
+      message: "Document uploaded and processed successfully",
+      document: processedDocument
     });
   } catch (error) {
-    console.error("Upload document error:", error.message);
+    console.error(
+      "Upload document error:",
+      error.message
+    );
 
     return res.status(500).json({
       message: "Server error"
@@ -77,13 +87,18 @@ export const getDocumentsBySubject = async (req, res) => {
 
     const documents = await Document.find({
       subjectId
-    }).sort({ createdAt: -1 });
+    }).sort({
+      createdAt: -1
+    });
 
     return res.status(200).json({
       documents
     });
   } catch (error) {
-    console.error("Get documents error:", error.message);
+    console.error(
+      "Get documents error:",
+      error.message
+    );
 
     return res.status(500).json({
       message: "Server error"
@@ -93,7 +108,9 @@ export const getDocumentsBySubject = async (req, res) => {
 
 export const getDocument = async (req, res) => {
   try {
-    const document = await Document.findById(req.params.id);
+    const document = await Document.findById(
+      req.params.id
+    );
 
     if (!document) {
       return res.status(404).json({
@@ -116,7 +133,10 @@ export const getDocument = async (req, res) => {
       document
     });
   } catch (error) {
-    console.error("Get document error:", error.message);
+    console.error(
+      "Get document error:",
+      error.message
+    );
 
     return res.status(500).json({
       message: "Server error"
@@ -126,7 +146,9 @@ export const getDocument = async (req, res) => {
 
 export const deleteDocument = async (req, res) => {
   try {
-    const document = await Document.findById(req.params.id);
+    const document = await Document.findById(
+      req.params.id
+    );
 
     if (!document) {
       return res.status(404).json({
@@ -153,7 +175,10 @@ export const deleteDocument = async (req, res) => {
       message: "Document deleted successfully"
     });
   } catch (error) {
-    console.error("Delete document error:", error.message);
+    console.error(
+      "Delete document error:",
+      error.message
+    );
 
     return res.status(500).json({
       message: "Server error"

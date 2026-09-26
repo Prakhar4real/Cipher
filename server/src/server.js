@@ -2,7 +2,7 @@ import "dotenv/config";
 import express from "express";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
-
+import chatRoutes from "./routes/chatRoutes.js";
 import subjectRoutes from "./routes/subjectRoutes.js";
 import documentRoutes from "./routes/documentRoutes.js";
 
@@ -15,6 +15,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes); //meaning: For every request beginning with /api/auth, let authRoutes handle the rest.
 app.use("/api/subjects", subjectRoutes);
 app.use("/api/documents", documentRoutes);
+app.use("/api/chats", chatRoutes);
 
 // Basic test route
 app.get("/", (req, res) => {
