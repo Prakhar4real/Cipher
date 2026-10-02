@@ -42,7 +42,7 @@ Triggered automatically in the background when a document is uploaded.
 
 ```
 Upload PDF
-   → Store file (Cloudinary/local)
+   → Store file (Supabase)
    → Create Document record (status: Processing)
    → Return response immediately (frontend shows "Processing...")
    → [Background]
