@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import AnimatedDots from "../../components/auth/AnimatedDots";
 
 function Login() {
@@ -7,6 +8,9 @@ function Login() {
     email: "",
     password: "",
   });
+
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -52,10 +56,8 @@ function Login() {
         return;
       }
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-
-      console.log("Login successful:", data.user);
+      login(data.token, data.user);
+      navigate("/dashboard");
     } catch (error) {
       setError("Unable to connect to the server. Please try again.");
     } finally {
