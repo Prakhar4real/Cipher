@@ -1,7 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import "./ChatPage.css";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
 const API_URL = "http://localhost:5000/api";
 
 function ChatPage() {
@@ -17,6 +20,23 @@ function ChatPage() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
+
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+
+    if (!textarea) return;
+
+    textarea.style.height = "auto";
+
+    const maxHeight = 160;
+
+    textarea.style.height = `${Math.min(textarea.scrollHeight, maxHeight)}px`;
+
+    textarea.style.overflowY =
+      textarea.scrollHeight > maxHeight ? "auto" : "hidden";
+  }, [input]);
 
   useEffect(() => {
     const fetchChat = async () => {
@@ -164,7 +184,15 @@ function ChatPage() {
                         {message.role === "user" ? "You" : "Cipher"}
                       </div>
 
-                      <div className="message-content">{message.content}</div>
+                      <div className="message-content">
+                        {message.role === "assistant" ? (
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {message.content}
+                          </ReactMarkdown>
+                        ) : (
+                          message.content
+                        )}
+                      </div>
 
                       {message.role === "assistant" &&
                         message.sources?.length > 0 && (
@@ -210,6 +238,7 @@ function ChatPage() {
             <div className="chat-input-wrapper">
               <div className="chat-input-box">
                 <textarea
+                  ref={textareaRef}
                   placeholder="Ask Cipher anything about your resources..."
                   rows={1}
                   value={input}

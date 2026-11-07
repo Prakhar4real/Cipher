@@ -322,3 +322,127 @@
   color: #96909f;
   font-size: 10px;
 }
+
+
+/* MARKDOWN ANSWER FORMATTING */
+
+.message-content {
+  overflow-wrap: anywhere;
+}
+
+.message-content h1,
+.message-content h2,
+.message-content h3,
+.message-content h4 {
+  color: #f0eaff;
+  line-height: 1.4;
+  margin: 22px 0 10px;
+  font-weight: 600;
+}
+
+.message-content h1 {
+  font-size: 21px;
+}
+
+.message-content h2 {
+  font-size: 18px;
+}
+
+.message-content h3,
+.message-content h4 {
+  font-size: 15px;
+}
+
+.message-content p {
+  margin: 0 0 14px;
+}
+
+.message-content strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.message-content ul,
+.message-content ol {
+  padding-left: 24px;
+  margin: 10px 0 16px;
+}
+
+.message-content li {
+  margin-bottom: 7px;
+  padding-left: 4px;
+}
+
+.message-content li::marker {
+  color: #a78bfa;
+}
+
+/* Markdown tables */
+
+.message-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0 20px;
+  font-size: 13px;
+  display: block;
+  overflow-x: auto;
+}
+
+.message-content th,
+.message-content td {
+  border: 1px solid #35313f;
+  padding: 11px 13px;
+  text-align: left;
+  min-width: 120px;
+}
+
+.message-content th {
+  background: #211d30;
+  color: #d8cafa;
+  font-weight: 600;
+}
+
+.message-content tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+/* Code blocks */
+
+.message-content pre {
+  background: #15151b;
+  border: 1px solid #30303a;
+  border-radius: 10px;
+  padding: 14px;
+  overflow-x: auto;
+  margin: 14px 0;
+}
+
+.message-content code {
+  font-family: Consolas, monospace;
+  font-size: 13px;
+}
+
+.message-content :not(pre) > code {
+  background: #252131;
+  color: #c4b5fd;
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+
+/* Blockquotes */
+
+.message-content blockquote {
+  margin: 14px 0;
+  padding: 8px 15px;
+  border-left: 3px solid #7655d9;
+  color: #aaa5b5;
+  background: rgba(139, 92, 246, 0.06);
+}
+
+/* Horizontal separators */
+
+.message-content hr {
+  border: none;
+  border-top: 1px solid #35313f;
+  margin: 20px 0;
+}
