@@ -165,3 +165,46 @@ export const deleteChat = async (req, res) => {
     });
   }
 };
+
+export const renameChat = async (req, res) => {
+  try {
+    const { title } = req.body;
+
+    if (typeof title !== "string" || !title.trim()) {
+      return res.status(400).json({
+        message: "Chat title is required"
+      });
+    }
+
+    if (title.trim().length > 100) {
+      return res.status(400).json({
+        message: "Chat title cannot exceed 100 characters"
+      });
+    }
+
+    const chat = await verifyChatOwnership(
+      req.params.id,
+      req.user.userId
+    );
+
+    if (!chat || !chat.subjectId) {
+      return res.status(404).json({
+        message: "Chat not found"
+      });
+    }
+
+    chat.title = title.trim();
+    await chat.save();
+
+    return res.status(200).json({
+      message: "Chat renamed successfully",
+      chat
+    });
+  } catch (error) {
+    console.error("Rename chat error:", error);
+
+    return res.status(500).json({
+      message: "Failed to rename chat"
+    });
+  }
+};

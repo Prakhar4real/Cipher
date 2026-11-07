@@ -598,3 +598,140 @@
   font-size: 11px;
   margin-top: 8px;
 }
+
+/* CHAT HISTORY ACTIONS */
+
+.chat-history-item {
+  position: relative;
+  justify-content: space-between;
+  gap: 6px;
+  cursor: default;
+}
+
+.chat-history-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.chat-history-open > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-history-open h3 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-history-actions {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.chat-menu-trigger {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #aaa3b6;
+  font-size: 21px;
+  cursor: pointer;
+  opacity: 0;
+  transition: 0.2s ease;
+}
+
+.chat-history-item:hover .chat-menu-trigger,
+.chat-menu-trigger:focus-visible {
+  opacity: 1;
+}
+
+.chat-menu-trigger:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.chat-options-menu {
+  position: absolute;
+  top: 32px;
+  right: 0;
+  z-index: 10;
+  width: 125px;
+  padding: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9px;
+  background: #29272e;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+.chat-options-menu button {
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #e7e3ed;
+  text-align: left;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.chat-options-menu button:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.chat-options-menu button:last-child {
+  color: #fb7777;
+}
+
+.chat-rename-form {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chat-rename-form input {
+  width: 100%;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid rgba(167, 139, 250, 0.5);
+  border-radius: 7px;
+  outline: none;
+  background: #141416;
+  color: white;
+  font-size: 12px;
+}
+
+.chat-rename-form button {
+  padding: 6px 10px;
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  border-radius: 6px;
+  background: rgba(139, 92, 246, 0.15);
+  color: #c8b6ff;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.chat-rename-form button:last-child {
+  background: transparent;
+  color: #aaa3b6;
+}
+
+@media (hover: none) {
+  .chat-menu-trigger {
+    opacity: 1;
+  }
+}

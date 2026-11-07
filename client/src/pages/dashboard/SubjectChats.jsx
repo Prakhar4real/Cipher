@@ -23,6 +23,10 @@ function SubjectChats() {
   const [creatingChat, setCreatingChat] = useState(false);
   const [createChatError, setCreateChatError] = useState("");
 
+  const [activeChatMenu, setActiveChatMenu] = useState(null);
+  const [renamingChatId, setRenamingChatId] = useState(null);
+  const [renameTitle, setRenameTitle] = useState("");
+
   const [showUploadModal, setShowUploadModal] = useState(false);
 
   const fileInputRef = useRef(null);
@@ -186,6 +190,71 @@ function SubjectChats() {
     }
   };
 
+  const handleRenameChat = async (chatId) => {
+    const trimmedTitle = renameTitle.trim();
+
+    if (!trimmedTitle) {
+      alert("Chat title cannot be empty.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/chats/${chatId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ title: trimmedTitle }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to rename chat.");
+      }
+
+      setChats((prevChats) =>
+        prevChats.map((chat) => (chat._id === chatId ? data.chat : chat)),
+      );
+
+      setRenamingChatId(null);
+      setRenameTitle("");
+      setActiveChatMenu(null);
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
+  const handleDeleteChat = async (chatId) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this chat? This action cannot be undone.",
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(`${API_URL}/chats/${chatId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to delete chat.");
+      }
+
+      setChats((prevChats) => prevChats.filter((chat) => chat._id !== chatId));
+
+      setActiveChatMenu(null);
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
   return (
     <div className="subject-chats-page">
       {/* Top Navigation */}
@@ -309,21 +378,99 @@ function SubjectChats() {
                 </div>
               ) : (
                 chats.map((chat) => (
-                  <button
-                    className="chat-history-item"
-                    key={chat._id}
-                    type="button"
-                    onClick={() =>
-                      navigate(`/subjects/${subjectId}/chats/${chat._id}`)
-                    }
-                  >
-                    <span className="chat-history-icon">▤</span>
+                  <div className="chat-history-item" key={chat._id}>
+                    {renamingChatId === chat._id ? (
+                      <div className="chat-rename-form">
+                        <input
+                          type="text"
+                          value={renameTitle}
+                          onChange={(e) => setRenameTitle(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleRenameChat(chat._id);
+                            if (e.key === "Escape") {
+                              setRenamingChatId(null);
+                              setRenameTitle("");
+                            }
+                          }}
+                          autoFocus
+                          maxLength={100}
+                        />
 
-                    <div>
-                      <h3>{chat.title}</h3>
-                      <p>{new Date(chat.updatedAt).toLocaleDateString()}</p>
-                    </div>
-                  </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRenameChat(chat._id)}
+                        >
+                          Save
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRenamingChatId(null);
+                            setRenameTitle("");
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <button
+                          className="chat-history-open"
+                          type="button"
+                          onClick={() =>
+                            navigate(`/subjects/${subjectId}/chats/${chat._id}`)
+                          }
+                        >
+                          <span className="chat-history-icon">▤</span>
+
+                          <div>
+                            <h3>{chat.title}</h3>
+                            <p>
+                              {new Date(chat.updatedAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </button>
+
+                        <div className="chat-history-actions">
+                          <button
+                            className="chat-menu-trigger"
+                            type="button"
+                            aria-label="Chat options"
+                            onClick={() =>
+                              setActiveChatMenu((prev) =>
+                                prev === chat._id ? null : chat._id,
+                              )
+                            }
+                          >
+                            ⋯
+                          </button>
+
+                          {activeChatMenu === chat._id && (
+                            <div className="chat-options-menu">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setRenamingChatId(chat._id);
+                                  setRenameTitle(chat.title);
+                                  setActiveChatMenu(null);
+                                }}
+                              >
+                                Rename
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteChat(chat._id)}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
                 ))
               )}
             </div>

@@ -7,6 +7,7 @@ import {
   createChat,
   getChatsBySubject,
   getChat,
+  renameChat,
   deleteChat
 } from "../controllers/chatController.js";
 
@@ -28,6 +29,12 @@ router.get(
   "/:id",
   authMiddleware,
   getChat
+);
+
+router.put(
+  "/:id",
+  authMiddleware,
+  renameChat
 );
 
 router.delete(
