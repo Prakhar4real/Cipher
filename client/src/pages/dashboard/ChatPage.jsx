@@ -165,6 +165,41 @@ function ChatPage() {
                       </div>
 
                       <div className="message-content">{message.content}</div>
+
+                      {message.role === "assistant" &&
+                        message.sources?.length > 0 && (
+                          <details className="message-sources">
+                            <summary>
+                              Sources ({message.sources.length} references)
+                            </summary>
+
+                            <ul>
+                              {[
+                                ...message.sources.reduce((groups, source) => {
+                                  const key = source.documentName;
+
+                                  if (!groups.has(key)) {
+                                    groups.set(key, new Set());
+                                  }
+
+                                  groups.get(key).add(source.pageNumber);
+
+                                  return groups;
+                                }, new Map()),
+                              ].map(([documentName, pages]) => (
+                                <li key={documentName}>
+                                  <strong>{documentName}</strong>
+                                  <span>
+                                    Pages{" "}
+                                    {[...pages]
+                                      .sort((a, b) => a - b)
+                                      .join(", ")}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          </details>
+                        )}
                     </div>
                   ))}
                 </div>

@@ -257,3 +257,68 @@
     max-width: 95%;
   }
 }
+
+/* COLLAPSIBLE MESSAGE SOURCES */
+
+.message-sources {
+  margin-top: 16px;
+  padding-top: 11px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.message-sources summary {
+  width: fit-content;
+  color: #b69aff;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.message-sources summary::-webkit-details-marker {
+  display: none;
+}
+
+.message-sources summary::before {
+  content: "›";
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 16px;
+  transition: transform 0.2s ease;
+}
+
+.message-sources[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.message-sources ul {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.message-sources li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 9px 11px;
+  border: 1px solid rgba(167, 139, 250, 0.13);
+  border-radius: 8px;
+  background: rgba(139, 92, 246, 0.06);
+}
+
+.message-sources li strong {
+  color: #d8cafa;
+  font-size: 11px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.message-sources li span {
+  color: #96909f;
+  font-size: 10px;
+}
