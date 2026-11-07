@@ -1,7 +1,9 @@
-
-import { useEffect, useState } from "react";
+import "./dashboard/SubjectCards.css";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import "./Dashboard.css";
+import "./dashboard/SubjectActions.css";
+import { useNavigate } from "react-router-dom";
 
 const API_URL = "http://localhost:5000/api";
 
@@ -21,6 +23,112 @@ function Dashboard() {
   const [createError, setCreateError] = useState("");
 
   const firstName = user?.name?.split(" ")[0] || "Student";
+
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const menuRef = useRef(null);
+
+  const [renameSubject, setRenameSubject] = useState(null);
+  const [renameName, setRenameName] = useState("");
+  const [renaming, setRenaming] = useState(false);
+  const [renameError, setRenameError] = useState("");
+
+  const [deleteSubject, setDeleteSubject] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
+  const navigate = useNavigate();
+
+  const handleRenameSubject = async (event) => {
+    event.preventDefault();
+
+    const trimmedName = renameName.trim();
+
+    if (!trimmedName) {
+      setRenameError("Please enter a subject name.");
+      return;
+    }
+
+    setRenaming(true);
+    setRenameError("");
+
+    try {
+      const response = await fetch(`${API_URL}/subjects/${renameSubject._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name: trimmedName }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to rename subject.");
+      }
+
+      setSubjects((previous) =>
+        previous.map((subject) =>
+          subject._id === renameSubject._id ? data.subject : subject,
+        ),
+      );
+
+      setRenameSubject(null);
+      setRenameName("");
+    } catch (error) {
+      console.error("Rename subject error:", error);
+      setRenameError(error.message || "Unable to rename subject.");
+    } finally {
+      setRenaming(false);
+    }
+  };
+
+  const handleDeleteSubject = async () => {
+    if (!deleteSubject) return;
+
+    setDeleting(true);
+    setDeleteError("");
+
+    try {
+      const response = await fetch(`${API_URL}/subjects/${deleteSubject._id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to delete subject.");
+      }
+
+      setSubjects((previous) =>
+        previous.filter((subject) => subject._id !== deleteSubject._id),
+      );
+
+      setDeleteSubject(null);
+    } catch (error) {
+      console.error("Delete subject error:", error);
+      setDeleteError(error.message || "Unable to delete subject.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setOpenMenuId(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchSubjects = async () => {
@@ -58,7 +166,7 @@ function Dashboard() {
   }, [token]);
 
   const filteredSubjects = subjects.filter((subject) =>
-    subject.name.toLowerCase().includes(search.toLowerCase())
+    subject.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   const openSubjectModal = () => {
@@ -168,10 +276,7 @@ function Dashboard() {
           </div>
 
           <div className="topbar-actions">
-            <button
-              className="notification-button"
-              aria-label="Notifications"
-            >
+            <button className="notification-button" aria-label="Notifications">
               ♧
             </button>
 
@@ -183,7 +288,7 @@ function Dashboard() {
 
         <section className="dashboard-content">
           <div className="welcome-section">
-            <h1>Welcome back, {firstName} 👋</h1>
+            <h1>Welcome back, {firstName}!</h1>
             <p>Continue learning with your subjects and chats.</p>
           </div>
 
@@ -208,10 +313,7 @@ function Dashboard() {
             ) : subjectsError ? (
               <div className="empty-state">
                 <p>{subjectsError}</p>
-                <button
-                  type="button"
-                  onClick={() => window.location.reload()}
-                >
+                <button type="button" onClick={() => window.location.reload()}>
                   Try again
                 </button>
               </div>
@@ -222,9 +324,9 @@ function Dashboard() {
                 <h2>LET'S DIVE IN!</h2>
 
                 <p>
-                  Your learning journey starts here.
-                  Create your first subject, upload your study materials,
-                  and start exploring your notes with Cipher.
+                  Your learning journey starts here. Create your first subject,
+                  upload your study materials, and start exploring your notes
+                  with Cipher.
                 </p>
 
                 <button
@@ -248,10 +350,68 @@ function Dashboard() {
               <div className="subject-grid">
                 {filteredSubjects.map((subject) => (
                   <div className="subject-card" key={subject._id}>
-                    <h3>{subject.name}</h3>
+                    <div className="subject-card-header">
+                      <h3>{subject.name}</h3>
+
+                      <div
+                        className="subject-actions"
+                        ref={openMenuId === subject._id ? menuRef : null}
+                      >
+                        <button
+                          type="button"
+                          className="subject-menu-button"
+                          aria-label={`Actions for ${subject.name}`}
+                          aria-expanded={openMenuId === subject._id}
+                          onClick={() =>
+                            setOpenMenuId((current) =>
+                              current === subject._id ? null : subject._id,
+                            )
+                          }
+                        >
+                          ⋮
+                        </button>
+
+                        {openMenuId === subject._id && (
+                          <div className="subject-dropdown">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setRenameSubject(subject);
+                                setRenameName(subject.name);
+                                setRenameError("");
+                                setOpenMenuId(null);
+                              }}
+                            >
+                              <span>✎</span> Rename
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setDeleteSubject(subject);
+                                setDeleteError("");
+                                setOpenMenuId(null);
+                              }}
+                            >
+                              <span>⌫</span> Delete
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOpenMenuId(null);
+                                navigate(`/subjects/${subject._id}/chats`);
+                              }}
+                            >
+                              <span>☰</span> Chats
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
                     <p>
-                      Created{" "}
-                      {new Date(subject.createdAt).toLocaleDateString()}
+                      Created {new Date(subject.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                 ))}
@@ -260,6 +420,99 @@ function Dashboard() {
           </section>
         </section>
       </main>
+
+      {renameSubject && (
+        <div
+          className="rename-modal-overlay"
+          onClick={() => {
+            if (!renaming) setRenameSubject(null);
+          }}
+        >
+          <div
+            className="rename-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2>Rename Subject</h2>
+            <p>Enter a new name for this subject.</p>
+
+            <form onSubmit={handleRenameSubject}>
+              <input
+                type="text"
+                value={renameName}
+                onChange={(event) => setRenameName(event.target.value)}
+                placeholder="Subject name"
+                autoFocus
+                maxLength={60}
+              />
+
+              {renameError && <p className="rename-error">{renameError}</p>}
+
+              <div className="rename-modal-actions">
+                <button
+                  type="button"
+                  className="rename-cancel-btn"
+                  onClick={() => setRenameSubject(null)}
+                  disabled={renaming}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="rename-save-btn"
+                  disabled={renaming}
+                >
+                  {renaming ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {deleteSubject && (
+        <div
+          className="rename-modal-overlay"
+          onClick={() => {
+            if (!deleting) setDeleteSubject(null);
+          }}
+        >
+          <div
+            className="rename-modal delete-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2>Delete Subject?</h2>
+
+            <p>
+              Are you sure you want to delete{" "}
+              <strong>{deleteSubject.name}</strong>? This action cannot be
+              undone.
+            </p>
+
+            {deleteError && <p className="rename-error">{deleteError}</p>}
+
+            <div className="rename-modal-actions">
+              <button
+                type="button"
+                className="rename-cancel-btn"
+                onClick={() => setDeleteSubject(null)}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="delete-confirm-btn"
+                onClick={handleDeleteSubject}
+                disabled={deleting}
+              >
+                {deleting ? "Deleting..." : "Delete Subject"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Create Subject Modal */}
       {showSubjectModal && (

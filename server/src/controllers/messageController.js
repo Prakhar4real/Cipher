@@ -12,7 +12,7 @@ export const sendMessage = async (req, res) => {
 
     if (!content || !content.trim()) {
       return res.status(400).json({
-        message: "Message content is required"
+        message: "Message content is required",
       });
     }
 
@@ -20,16 +20,13 @@ export const sendMessage = async (req, res) => {
 
     if (!chat || !chat.subjectId) {
       return res.status(404).json({
-        message: "Chat not found"
+        message: "Chat not found",
       });
     }
 
-    if (
-      chat.subjectId.userId.toString() !==
-      req.user.userId.toString()
-    ) {
+    if (chat.subjectId.userId.toString() !== req.user.userId.toString()) {
       return res.status(404).json({
-        message: "Chat not found"
+        message: "Chat not found",
       });
     }
 
@@ -37,31 +34,37 @@ export const sendMessage = async (req, res) => {
       chatId: chat._id,
       role: "user",
       content: content.trim(),
-      sources: []
+      sources: [],
     });
 
     try {
-      const queryEmbedding = await generateEmbedding(
-        content.trim()
-      );
+      const queryEmbedding = await generateEmbedding(content.trim());
 
       const sources = await searchSimilarChunks(
         queryEmbedding,
-        req.user.userId,
-        5
+        chat.subjectId._id,
+        5,
+      );
+      console.log("Retrieved chunks:", sources.length);
+
+      console.log(
+        "Retrieved content:",
+        sources.map((source) => ({
+          documentName: source.documentName,
+          pageNumber: source.pageNumber,
+          score: source.score,
+          text: source.text.slice(0, 300),
+        })),
       );
 
-      const generationResult = await generateAnswer(
-        content.trim(),
-        sources
-      );
+      const generationResult = await generateAnswer(content.trim(), sources);
 
       const citations = generationResult.hasAnswer
         ? sources.map((source) => ({
             documentId: source.documentId,
             documentName: source.documentName,
             pageNumber: source.pageNumber,
-            chunkIndex: source.chunkIndex
+            chunkIndex: source.chunkIndex,
           }))
         : [];
 
@@ -69,37 +72,36 @@ export const sendMessage = async (req, res) => {
         chatId: chat._id,
         role: "assistant",
         content: generationResult.answer,
-        sources: citations
+        sources: citations,
       });
 
       await Chat.updateOne(
         {
-          _id: chat._id
+          _id: chat._id,
         },
         {
           $set: {
-            updatedAt: new Date()
-          }
-        }
+            updatedAt: new Date(),
+          },
+        },
       );
 
       return res.status(201).json({
         userMessage,
-        assistantMessage
+        assistantMessage,
       });
     } catch (aiError) {
       console.error("RAG processing error:", aiError);
 
       return res.status(502).json({
-        message:
-          "Unable to generate a response right now. Please try again."
+        message: "Unable to generate a response right now. Please try again.",
       });
     }
   } catch (error) {
     console.error("Send message error:", error);
 
     return res.status(500).json({
-      message: "Failed to send message"
+      message: "Failed to send message",
     });
   }
 };

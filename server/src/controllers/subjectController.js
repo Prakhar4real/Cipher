@@ -1,4 +1,6 @@
 import Subject from "../models/Subject.js";
+import Chat from "../models/Chat.js";
+import Message from "../models/Message.js";
 
 export const createSubject = async (req, res) => {
   try {
@@ -116,7 +118,7 @@ export const updateSubject = async (req, res) => {
 
 export const deleteSubject = async (req, res) => {
   try {
-    const subject = await Subject.findOneAndDelete({
+    const subject = await Subject.findOne({
       _id: req.params.id,
       userId: req.user.userId
     });
@@ -127,14 +129,38 @@ export const deleteSubject = async (req, res) => {
       });
     }
 
+    // Find all chats belonging to this subject
+    const chats = await Chat.find({
+      subjectId: subject._id
+    }).select("_id");
+
+    const chatIds = chats.map((chat) => chat._id);
+
+    // Delete all messages belonging to those chats
+    if (chatIds.length > 0) {
+      await Message.deleteMany({
+        chatId: { $in: chatIds }
+      });
+    }
+
+    // Delete all chats belonging to this subject
+    await Chat.deleteMany({
+      subjectId: subject._id
+    });
+
+    // Finally, delete the subject
+    await Subject.deleteOne({
+      _id: subject._id
+    });
+
     return res.status(200).json({
-      message: "Subject deleted successfully"
+      message: "Subject and associated chats and messages deleted successfully"
     });
   } catch (error) {
-    console.error("Delete subject error:", error.message);
+    console.error("Delete subject error:", error);
 
     return res.status(500).json({
-      message: "Server error"
+      message: "Failed to delete subject"
     });
   }
 };

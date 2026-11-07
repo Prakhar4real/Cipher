@@ -1,24 +1,16 @@
 import Chunk from "../models/Chunk.js";
-import Subject from "../models/Subject.js";
 import Document from "../models/Document.js";
 
 const VECTOR_INDEX_NAME = "vector_index";
 
 export const searchSimilarChunks = async (
   queryEmbedding,
-  userId,
+  subjectId,
   limit = 5
 ) => {
-  const subjects = await Subject.find({
-    userId
-  }).select("_id");
-
-  const subjectIds = subjects.map(
-    (subject) => subject._id
-  );
-
+  // Find documents belonging only to this subject
   const documents = await Document.find({
-    subjectId: { $in: subjectIds }
+    subjectId
   }).select("_id");
 
   const documentIds = documents.map(
@@ -67,13 +59,13 @@ export const searchSimilarChunks = async (
     (result) => result.documentId
   );
 
-  const documentsById = new Map();
-
   const retrievedDocuments = await Document.find({
     _id: {
       $in: documentIdsFromResults
     }
   }).select("_id name");
+
+  const documentsById = new Map();
 
   for (const document of retrievedDocuments) {
     documentsById.set(

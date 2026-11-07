@@ -1,6 +1,6 @@
 import ai from "../config/gemini.js";
 
-const GENERATION_MODEL = "gemini-3.8-flash";
+const GENERATION_MODEL = "gemini-3.5-flash-lite";
 
 export const generateAnswer = async (question, sources) => {
   const sourceContext = sources
@@ -12,7 +12,7 @@ Page: ${source.pageNumber}
 Chunk: ${source.chunkIndex}
 
 ${source.text}
-`
+`,
     )
     .join("\n");
 
@@ -38,13 +38,16 @@ ${question}
 
   const response = await ai.models.generateContent({
     model: GENERATION_MODEL,
-    contents: prompt
+    contents: prompt,
+    config: {
+      maxOutputTokens: 512,
+    },
   });
 
   return {
     answer: response.text,
     hasAnswer: !response.text
       .toLowerCase()
-      .includes("do not contain enough information")
+      .includes("do not contain enough information"),
   };
 };
